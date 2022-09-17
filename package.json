@@ -1,12 +1,24 @@
 {
   "name": "fragments-ui",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Fragments UI testing web app",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npx parcel index.html --open"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/saminarp/fragments-ui"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "author": "Samina Rahman Purba srpurba@myseneca.ca",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "aws-amplify": "^4.3.35",
+    "parcel": "^2.7.0",
+    "prettier": "^2.7.1",
+    "process": "^0.11.10",
+    "querystring-es3": "^0.2.1"
+  }
 }
