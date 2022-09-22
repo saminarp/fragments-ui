@@ -23,8 +23,6 @@ async function init() {
 
   // See if we're signed in (i.e., we'll have a `user` object)
   const user = await getUser();
-  // Do an authenticated request to the fragments API server and log the result
-  getUserFragments(user);
 
   if (!user) {
     // Disable the Logout button
@@ -40,6 +38,8 @@ async function init() {
   userSection.querySelector('.username').innerText = user.username;
   // Disable the Login button
   loginBtn.disabled = true;
+  // Do an authenticated request to the fragments API server and log the result
+  getUserFragments(user);
 }
 
 // Wait for the DOM to be ready, then start the app

@@ -60,7 +60,7 @@ async function getUser() {
       },
     };
   } catch (err) {
-    console.error(err);
+    console.log(err);
     // Unable to get user, return `null` instead
     return null;
   }
