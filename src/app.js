@@ -9,6 +9,9 @@ async function init() {
   const loginBtn = document.querySelector('#login');
   const logoutBtn = document.querySelector('#logout');
 
+  const fragmentForm = document.querySelector('#fragmentForm');
+  const fragmentTextArea = document.querySelector('#fragment-content');
+
   // Wire up event handlers to deal with login and logout.
   loginBtn.onclick = () => {
     // Sign-in via the Amazon Cognito Hosted UI (requires redirects), see:
@@ -40,6 +43,11 @@ async function init() {
   loginBtn.disabled = true;
   // Do an authenticated request to the fragments API server and log the result
   getUserFragments(user);
+
+  fragmentForm.onsubmit = async (e) => {
+    e.preventDefault();
+    console.log('Submitting fragment form', { content: fragmentTextArea.value });
+  };
 }
 
 // Wait for the DOM to be ready, then start the app

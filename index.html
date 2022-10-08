@@ -15,6 +15,20 @@
       <section hidden id="user">
         <h2>Hello <span class="username"></span>!</h2>
       </section>
+
+      <!-- section to allow users to create fragments A1  -->
+      <section id="create">
+        <h2>Create a new fragment</h2>
+        <form id="fragmentForm">
+          <!-- dropdown -->
+          <label for="type">Content-Type</label>
+          <select id="type">
+            <option value="text">text/plain</option>
+          </select> 
+          <br><br>
+          <textarea id="fragment-content"></textarea>
+          <input type="submit" value="Create">
+        </form>
     </div>
   </body>
 </html>
