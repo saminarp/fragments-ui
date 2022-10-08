@@ -1,7 +1,7 @@
 // src/app.js
 
 import { Auth, getUser } from './auth';
-import { getUserFragments } from './api';
+import { getUserFragments, getUserFragmentById, postFragment } from './api';
 
 async function init() {
   // Get our UI elements
@@ -44,10 +44,35 @@ async function init() {
   // Do an authenticated request to the fragments API server and log the result
   getUserFragments(user);
 
-  fragmentForm.onsubmit = async (e) => {
-    e.preventDefault();
-    console.log('Submitting fragment form', { content: fragmentTextArea.value });
-  };
+  fragmentForm.addEventListener('submit', fragmentsHandler);
+
+  async function fragmentsHandler(event) {
+    event.preventDefault();
+    const createFragment = await postFragment(user, 'text/plain', fragmentTextArea.value);
+    console.log({ data: createFragment.fragments.fragment });
+
+    const fragId = createFragment.fragments.fragment.id;
+    const fragLen = createFragment.fragments.fragment.size;
+    const fragType = createFragment.fragments.fragment.type;
+    const fragDate = new Date(createFragment.fragments.fragment.created).toLocaleDateString(
+      'en-CA',
+      {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }
+    );
+    /* Fragment metadata to work with in UI */
+    const metadata = {
+      id: fragId,
+      size: fragLen,
+      type: fragType,
+      created: fragDate,
+    };
+    console.log(
+      `Fragment ${metadata.id} created on ${metadata.created} with ${metadata.size} bytes of ${metadata.type} data`
+    );
+  }
 }
 
 // Wait for the DOM to be ready, then start the app

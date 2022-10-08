@@ -41,23 +41,22 @@ export async function getUserFragmentById(user, id) {
   }
 }
 
-export async function postFragment(user, content, value) {
+export async function postFragment(user, contentType, value) {
   try {
     const res = await fetch(`${apiUrl}/v1/fragments`, {
       method: 'POST',
-      headers: user.authorizationHeaders(),
-      body: JSON.stringify({
-        content,
-        value,
-      }),
+      headers: {
+        'Content-Type': contentType,
+        Authorization: user.authorizationHeaders().Authorization,
+      },
+      body: value,
     });
     if (!res.ok) {
       throw new Error(`${res.status} ${res.statusText}`);
     }
     const data = await res.json();
-    console.log('Posted fragment', { data });
     return data;
-  } catch (error) {
-    console.error('Unable to POST fragment', { err });
+  } catch (err) {
+    console.error('Unable to call POST /v1/fragment', { err: err.message });
   }
 }
