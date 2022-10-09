@@ -49,19 +49,15 @@ async function init() {
   async function fragmentsHandler(event) {
     event.preventDefault();
     const createFragment = await postFragment(user, 'text/plain', fragmentTextArea.value);
-    console.log({ data: createFragment.fragments.fragment });
 
-    const fragId = createFragment.fragments.fragment.id;
-    const fragLen = createFragment.fragments.fragment.size;
-    const fragType = createFragment.fragments.fragment.type;
-    const fragDate = new Date(createFragment.fragments.fragment.created).toLocaleDateString(
-      'en-CA',
-      {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      }
-    );
+    const fragId = createFragment.fragment.id;
+    const fragLen = createFragment.fragment.size;
+    const fragType = createFragment.fragment.type;
+    const fragDate = new Date(createFragment.fragment.created).toLocaleDateString('en-CA', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
     /* Fragment metadata to work with in UI */
     const metadata = {
       id: fragId,
@@ -72,6 +68,43 @@ async function init() {
     console.log(
       `Fragment ${metadata.id} created on ${metadata.created} with ${metadata.size} bytes of ${metadata.type} data`
     );
+
+    // Each time a fragment is created, we'll create a new card to display the metadata
+    const fragmentCard = document.createElement('div');
+    fragmentCard.classList.add('card', 'bg-secondary', 'mb-3');
+    fragmentCard.style.width = '18rem';
+    const fragmentCardHeader = document.createElement('div');
+    fragmentCardHeader.classList.add('card-header');
+    fragmentCardHeader.innerText = 'Fragment Metadata';
+
+    const fragmentCardBody = document.createElement('div');
+    fragmentCardBody.classList.add('card-body');
+    const fragmentCardTitle = document.createElement('h4');
+    fragmentCardTitle.classList.add('card-title', 'fragmentType');
+    fragmentCardTitle.innerText = `Content-Type: ${metadata.type}`;
+    const fragmentCardSubtitle = document.createElement('h5');
+    fragmentCardSubtitle.classList.add('card-subtitle', 'mb-2', 'fragmentSize');
+    fragmentCardSubtitle.innerText = `Size: ${metadata.size} bytes`;
+    const fragmentCardText = document.createElement('p');
+    fragmentCardText.classList.add('card-text');
+    fragmentCardText.innerText = `Created on ${metadata.created}`;
+    fragmentCardBody.appendChild(fragmentCardTitle);
+    fragmentCardBody.appendChild(fragmentCardSubtitle);
+    fragmentCardBody.appendChild(fragmentCardText);
+    fragmentCard.appendChild(fragmentCardHeader);
+    fragmentCard.appendChild(fragmentCardBody);
+    document.querySelector('#fragments').appendChild(fragmentCard);
+    // add id
+    const fragmentId = document.createElement('p');
+    fragmentId.classList.add('card-text', 'fragmentId');
+    fragmentId.innerText = `Fragment ID: ${metadata.id}`;
+    fragmentCardBody.appendChild(fragmentId);
+    fragmentCard.appendChild(fragmentCardBody);
+    document.querySelector('#fragments').appendChild(fragmentCard);
+
+    const fragmentData = await getUserFragmentById(user, fragId);
+    console.log(fragmentData.data);
+    fragmentCardText.innerText = 'Data: ' + fragmentData.data;
   }
 }
 
