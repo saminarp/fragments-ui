@@ -103,8 +103,8 @@ async function init() {
     document.querySelector('#fragments').appendChild(fragmentCard);
 
     const fragmentData = await getUserFragmentById(user, fragId);
-    console.log(fragmentData.data);
-    fragmentCardText.innerText = 'Data: ' + fragmentData.data;
+    console.log(fragmentData);
+    fragmentCardText.innerText = 'Data: ' + fragmentData;
   }
 }
 

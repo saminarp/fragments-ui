@@ -33,9 +33,18 @@ export async function getUserFragmentById(user, id) {
     if (!res.ok) {
       throw new Error(`${res.status} ${res.statusText}`);
     }
-    const data = await res.json();
-    console.log('Got user fragment data', { data });
-    return data;
+    const type = res.headers.get('Content-Type');
+
+    if (type && type.includes('application/json')) {
+      console.log('Response is JSON');
+      const data = await res.json();
+      const safeData = JSON.parse(JSON.stringify(data, null, 2));
+      return safeData;
+    } else if (type && type.includes('text/plain')) {
+      console.log('Response is text');
+      const data = await res.text();
+      return data;
+    }
   } catch (err) {
     console.error('Unable to call GET /v1/fragment', { err });
   }
