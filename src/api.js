@@ -8,18 +8,23 @@ const apiUrl = process.env.API_URL || 'http://localhost:8080';
  * fragments microservice (currently only running locally). We expect a user
  * to have an `idToken` attached, so we can send that along with the request.
  */
-export async function getUserFragments(user) {
+export async function getUserFragments(user, expand) {
   console.log('Requesting user fragments data...');
+  let baseUrl = `${apiUrl}/v1/fragments`;
+  if (expand) baseUrl += `?expand=${expand}`;
+
   try {
-    const res = await fetch(`${apiUrl}/v1/fragments`, {
+    const res = await fetch(baseUrl, {
       // Generate headers with the proper Authorization bearer token to pass
       headers: user.authorizationHeaders(),
     });
+
     if (!res.ok) {
       throw new Error(`${res.status} ${res.statusText}`);
     }
     const data = await res.json();
     console.log('Got user fragments data', { data });
+    return data;
   } catch (err) {
     console.error('Unable to call GET /v1/fragment', { err });
   }
