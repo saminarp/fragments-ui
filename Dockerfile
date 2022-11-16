@@ -12,7 +12,6 @@ RUN npm ci
 
 
 #########################################################
-
 FROM node:16.15.1-bullseye@sha256:294ed7085d137d4f16fd97c0e1518f1d0386dd7fda7c4897d82c7ba65e15fdd6 AS build
 
 WORKDIR /home/node/app 

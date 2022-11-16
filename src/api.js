@@ -1,20 +1,13 @@
-// src/api.js
-
 // fragments microservice API, defaults to localhost:8080
 const apiUrl = process.env.API_URL || 'http://localhost:8080';
 
-/**
- * Given an authenticated user, request all fragments for this user from the
- * fragments microservice (currently only running locally). We expect a user
- * to have an `idToken` attached, so we can send that along with the request.
- */
 export async function getUserFragments(user, expand) {
   console.log('Requesting user fragments data...');
-  let baseUrl = `${apiUrl}/v1/fragments`;
-  if (expand) baseUrl += `?expand=${expand}`;
-
   try {
-    const res = await fetch(baseUrl, {
+    let url = `${apiUrl}/v1/fragments`;
+    if (expand) url += '?expand=1';
+
+    const res = await fetch(url, {
       // Generate headers with the proper Authorization bearer token to pass
       headers: user.authorizationHeaders(),
     });
@@ -26,51 +19,50 @@ export async function getUserFragments(user, expand) {
     console.log('Got user fragments data', { data });
     return data;
   } catch (err) {
-    console.error('Unable to call GET /v1/fragment', { err });
+    console.error('Unable to call GET /v1/fragments', { err });
   }
 }
 
-export async function getUserFragmentById(user, id) {
+export async function getFragmentOP(user, id, ext, info) {
+  console.log('Requesting a single fragment...');
+
+  let data;
   try {
-    const res = await fetch(`${apiUrl}/v1/fragments/${id}`, {
+    let url = `${apiUrl}/v1/fragments/${id}${ext}`;
+    if (info) url += '/info';
+    const res = await fetch(url, {
+      // Generate headers with the proper Authorization bearer token to pass
       headers: user.authorizationHeaders(),
     });
+
     if (!res.ok) {
       throw new Error(`${res.status} ${res.statusText}`);
     }
-    const type = res.headers.get('Content-Type');
 
-    if (type && type.includes('application/json')) {
-      console.log('Response is JSON');
-      const data = await res.json();
-      const safeData = JSON.parse(JSON.stringify(data, null, 2));
-      return safeData;
-    } else if (type && type.includes('text/plain')) {
-      console.log('Response is text');
-      const data = await res.text();
-      return data;
-    }
+    if (info) data = await res.json();
+    else data = await res.text();
+    console.log('Got user fragment data', { data });
+    return data;
   } catch (err) {
-    console.error('Unable to call GET /v1/fragment', { err });
+    console.error('Unable to call GET /v1/fragments/:id ext is', { ext }, { err });
   }
 }
 
-export async function postFragment(user, contentType, value) {
+export async function postFragment(user, fragment, type) {
+  console.log('Posting user fragment data...');
+
   try {
     const res = await fetch(`${apiUrl}/v1/fragments`, {
       method: 'POST',
-      headers: {
-        'Content-Type': contentType,
-        Authorization: user.authorizationHeaders().Authorization,
-      },
-      body: value,
+      'Content-Type': type,
+      headers: user.authorizationHeaders(),
+      body: fragment,
     });
     if (!res.ok) {
       throw new Error(`${res.status} ${res.statusText}`);
     }
-    const data = await res.json();
-    return data;
+    console.log('User fragment data posted', { fragment });
   } catch (err) {
-    console.error('Unable to call POST /v1/fragment', { err: err.message });
+    console.error('Unable to call POST /v1/fragment', { err });
   }
 }

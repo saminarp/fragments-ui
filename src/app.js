@@ -1,18 +1,25 @@
 // src/app.js
 
 import { Auth, getUser } from './auth';
-import { getUserFragments, getUserFragmentById, postFragment } from './api';
+import { getFragmentOP, getUserFragments, postFragment } from './api';
 
 async function init() {
   // Get our UI elements
-  const userSection = document.querySelector('#user');
+  // Auth Elements (login, logout, etc)
   const loginBtn = document.querySelector('#login');
   const logoutBtn = document.querySelector('#logout');
+  const userSection = document.querySelector('#user');
 
-  const fragmentForm = document.querySelector('#fragmentForm');
-  const fragmentTextArea = document.querySelector('#fragment-content');
+  // CREATE: Fragment form and fragment metadata elements
+  const fragmentForm = document.querySelector('#fragment-form'); // form where we POST fragment data
+  const fragmentInput = document.querySelector('#fragment-data-input'); // ENTER fragment data here
+  const fragmentType = document.querySelector('#create-fragment-type'); // SELECT fragment type here
 
-  // Wire up event handlers to deal with login and logout.
+  // CONVERT: Convert Form and Fragment ID
+  const convertForm = document.querySelector('#convert-form');
+  const convertFragmentIdInput = document.querySelector('#convert-fragment-id-input'); // ENTER fragment id here
+  const convertFragmentType = document.querySelector('#convert-fragment-type'); // SELECT fragment type here
+
   loginBtn.onclick = () => {
     // Sign-in via the Amazon Cognito Hosted UI (requires redirects), see:
     // https://docs.amplify.aws/lib/auth/advanced/q/platform/js/#identity-pool-federation
@@ -22,7 +29,7 @@ async function init() {
     // Sign-out of the Amazon Cognito Hosted UI (requires redirects), see:
     // https://docs.amplify.aws/lib/auth/emailpassword/q/platform/js/#sign-out
     Auth.signOut();
-  };
+  }; // See if we're signed in (i.e., we'll have a `user` object)
 
   // See if we're signed in (i.e., we'll have a `user` object)
   const user = await getUser();
@@ -32,81 +39,52 @@ async function init() {
     logoutBtn.disabled = true;
     return;
   }
-
-  // Log the user info for debugging purposes
-  console.log({ user });
-  // Update the UI to welcome the user
-  userSection.hidden = false;
-  // Show the user's username
+  userSection.hidden = false; // Show the user's username
+  console.log('User is signed in', { user });
   userSection.querySelector('.username').innerText = user.username;
-  // Disable the Login button
+
   loginBtn.disabled = true;
-  // Do an authenticated request to the fragments API server and log the result
-  getUserFragments(user);
 
-  fragmentForm.addEventListener('submit', fragmentsHandler);
+  // POST a fragment to the API
+  fragmentForm.onsubmit = (e) => {
+    e.preventDefault();
+    postFragment(user, fragmentInput.value, fragmentType.value);
 
-  async function fragmentsHandler(event) {
-    event.preventDefault();
-    const createFragment = await postFragment(user, 'text/plain', fragmentTextArea.value);
+    readFragmentsIntoCard();
+  };
+  // CONVERT a fragment
+  convertForm.onsubmit = (e) => {
+    e.preventDefault();
 
-    const fragId = createFragment.fragment.id;
-    const fragLen = createFragment.fragment.size;
-    const fragType = createFragment.fragment.type;
-    const fragDate = new Date(createFragment.fragment.created).toLocaleDateString('en-CA', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-    /* Fragment metadata to work with in UI */
-    const metadata = {
-      id: fragId,
-      size: fragLen,
-      type: fragType,
-      created: fragDate,
-    };
-    console.log(
-      `Fragment ${metadata.id} created on ${metadata.created} with ${metadata.size} bytes of ${metadata.type} data`
+    const result = getFragmentOP(
+      user,
+      convertFragmentIdInput.value,
+      convertFragmentType.value,
+      false
     );
+    console.log(result);
+  };
 
-    // Each time a fragment is created, we'll create a new card to display the metadata
-    const fragmentCard = document.createElement('div');
-    fragmentCard.classList.add('card', 'bg-secondary', 'mb-3');
-    fragmentCard.style.width = '18rem';
-    const fragmentCardHeader = document.createElement('div');
-    fragmentCardHeader.classList.add('card-header');
-    fragmentCardHeader.innerText = 'Fragment Metadata';
+  function readFragmentsIntoCard() {
+    const listOfFragments = getUserFragments(user, true);
+    listOfFragments.then((data) => {
+      const fragmentCards = document.querySelector('#fragmentCards');
+      fragmentCards.innerHTML = '';
+      data.fragments.forEach((fragment) => {
+        const fragmentDiv = document.createElement('div');
 
-    const fragmentCardBody = document.createElement('div');
-    fragmentCardBody.classList.add('card-body');
-    const fragmentCardTitle = document.createElement('h4');
-    fragmentCardTitle.classList.add('card-title', 'fragmentType');
-    fragmentCardTitle.innerText = `Content-Type: ${metadata.type}`;
-    const fragmentCardSubtitle = document.createElement('h5');
-    fragmentCardSubtitle.classList.add('card-subtitle', 'mb-2', 'fragmentSize');
-    fragmentCardSubtitle.innerText = `Size: ${metadata.size} bytes`;
-    const fragmentCardText = document.createElement('p');
-    fragmentCardText.classList.add('card-text');
-    fragmentCardText.innerText = `Created on ${metadata.created}`;
-    fragmentCardBody.appendChild(fragmentCardTitle);
-    fragmentCardBody.appendChild(fragmentCardSubtitle);
-    fragmentCardBody.appendChild(fragmentCardText);
-    fragmentCard.appendChild(fragmentCardHeader);
-    fragmentCard.appendChild(fragmentCardBody);
-    document.querySelector('#fragments').appendChild(fragmentCard);
-    // add id
-    const fragmentId = document.createElement('p');
-    fragmentId.classList.add('card-text', 'fragmentId');
-    fragmentId.innerText = `Fragment ID: ${metadata.id}`;
-    fragmentCardBody.appendChild(fragmentId);
-    fragmentCard.appendChild(fragmentCardBody);
-    document.querySelector('#fragments').appendChild(fragmentCard);
+        fragmentDiv.style =
+          'border: 1px solid black; margin: 10px; padding: 10px; width: 500px; overflow: scroll; display: inline-block; vertical-align: top; text-align: left; background-color: #f2f2f2; border-radius: 5px; color: #000000;';
 
-    const fragmentData = await getUserFragmentById(user, fragId);
-    console.log(fragmentData);
-    fragmentCardText.innerText = 'Data: ' + fragmentData;
+        fragmentDiv.innerHTML = `Fragment ID:  ${fragment.id} <br> Fragment Type: ${fragment.type}  <br> Fragment Created: ${fragment.created} <br>  Fragment Updated: ${fragment.updated} <br> Fragment Size : ${fragment.size}`;
+
+        fragmentCards.appendChild(fragmentDiv);
+      });
+    });
   }
+  readFragmentsIntoCard();
 }
+console.log({ user });
 
 // Wait for the DOM to be ready, then start the app
 addEventListener('DOMContentLoaded', init);

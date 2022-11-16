@@ -12,6 +12,12 @@
     <link rel="stylesheet" href="https://unpkg.com/bamboo.css" />
     <script type="module" src="src/app.js"></script>
   </head>
+  <style>
+    section {
+      margin: 10px 0;
+    }
+  </style>
+
   <body>
     <div id="app">
       <h1>Fragments UI</h1>
@@ -22,26 +28,55 @@
         <h2>Hello <span class="username"></span>!</h2>
       </section>
 
-      <!-- section to allow users to create fragments A1  -->
-      <section id="create">
+      <!-- ============== POST OP ================ -->
+      <hr />
+      <section id="postFragment">
         <h2>Create a new fragment</h2>
-        <form id="fragmentForm">
+        <form id="fragment-form">
           <!-- dropdown -->
-          <label for="type">Content-Type</label>
-          <select id="type">
-            <option value="text">text/plain</option>
+          <label for="create-fragment-type">Content-Type: </label>
+          <select id="create-fragment-type">
+            <option value="text/markdown">text/markdown</option>
+            <option value="text/html">text/html</option>
+            <option value="text/plain">text/plain</option>
+            <option value="application/json">application/json</option>
           </select>
           <br /><br />
-          <textarea id="fragment-content"></textarea>
-          <input type="submit" value="Create" />
+          <label for="create-fragment-type">Enter fragment data: </label>
+          <input type="text" id="fragment-data-input" />
+          <input type="submit" value="Post Fragment" style="margin-top: 10px" />
         </form>
       </section>
-      <br /><br /><br /><br />
-      <section>
-        <!-- put spaces between -->
+      <hr />
+      <!-- ============== GET CONVERSION ================= -->
 
-        <div id="fragments" style="display: flex; flex-direction: row; flex-wrap: wrap"></div>
-        <style></style>
+      <section>
+        <h2>Convert Fragments</h2>
+
+        <form id="convert-form">
+          <label for="convert-fragment-type">Convert fragment to type: </label>
+          <select id="convert-fragment-type">
+            <option value=".md">text/markdown</option>
+            <option value=".html">text/html</option>
+            <option value=".txt">text/plain</option>
+            <option value=".json">application/json</option>
+          </select>
+          <br /><br />
+          <label for="create-fragment-type">Enter fragment ID that will be converted </label>
+          <input type="text" id="convert-fragment-id-input" />
+          <input type="submit" value="Convert Fragment" style="margin-top: 10px" />
+        </form>
+      </section>
+      <p id="dspError"></p>
+      <hr />
+
+      <!-- ============== LIST FRAGMENTS ================= -->
+      <section>
+        <h2>List of Fragments</h2>
+        <!-- <button id="get-fragments-btn" style="margin-top: 5px">Toggle all fragments</button> -->
+        <div class="fragments-card-section">
+          <div id="fragmentCards"></div>
+        </div>
       </section>
     </div>
   </body>
