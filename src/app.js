@@ -3,23 +3,23 @@
 import { Auth, getUser } from './auth';
 import { getFragmentOP, getUserFragments, postFragment } from './api';
 
+// Get our UI elements
+// Auth Elements (login, logout, etc)
+const loginBtn = document.querySelector('#login');
+const logoutBtn = document.querySelector('#logout');
+const userSection = document.querySelector('#user');
+
+// CREATE: Fragment form and fragment metadata elements
+const fragmentForm = document.querySelector('#fragment-form'); // form where we POST fragment data
+const fragmentInput = document.querySelector('#fragment-data-input'); // ENTER fragment data here
+const fragmentType = document.querySelector('#create-fragment-type'); // SELECT fragment type here
+
+// CONVERT: Convert Form and Fragment ID
+const convertForm = document.querySelector('#convert-form');
+const convertFragmentIdInput = document.querySelector('#convert-fragment-id-input'); // ENTER fragment id here
+const convertFragmentType = document.querySelector('#convert-fragment-type'); // SELECT fragment type here
+
 async function init() {
-  // Get our UI elements
-  // Auth Elements (login, logout, etc)
-  const loginBtn = document.querySelector('#login');
-  const logoutBtn = document.querySelector('#logout');
-  const userSection = document.querySelector('#user');
-
-  // CREATE: Fragment form and fragment metadata elements
-  const fragmentForm = document.querySelector('#fragment-form'); // form where we POST fragment data
-  const fragmentInput = document.querySelector('#fragment-data-input'); // ENTER fragment data here
-  const fragmentType = document.querySelector('#create-fragment-type'); // SELECT fragment type here
-
-  // CONVERT: Convert Form and Fragment ID
-  const convertForm = document.querySelector('#convert-form');
-  const convertFragmentIdInput = document.querySelector('#convert-fragment-id-input'); // ENTER fragment id here
-  const convertFragmentType = document.querySelector('#convert-fragment-type'); // SELECT fragment type here
-
   loginBtn.onclick = () => {
     // Sign-in via the Amazon Cognito Hosted UI (requires redirects), see:
     // https://docs.amplify.aws/lib/auth/advanced/q/platform/js/#identity-pool-federation
@@ -46,10 +46,10 @@ async function init() {
   loginBtn.disabled = true;
 
   // POST a fragment to the API
-  fragmentForm.onsubmit = (e) => {
+  fragmentForm.onsubmit = async (e) => {
+    console.log('=> From APP JS: fragmentForm.onsubmit');
     e.preventDefault();
-    postFragment(user, fragmentInput.value, fragmentType.value);
-
+    await postFragment(user, fragmentInput.value, fragmentType.value);
     readFragmentsIntoCard();
   };
   // CONVERT a fragment
@@ -84,7 +84,6 @@ async function init() {
   }
   readFragmentsIntoCard();
 }
-console.log({ user });
 
 // Wait for the DOM to be ready, then start the app
 addEventListener('DOMContentLoaded', init);

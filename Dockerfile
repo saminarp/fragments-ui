@@ -4,7 +4,7 @@ FROM node:16.15.1-bullseye@sha256:294ed7085d137d4f16fd97c0e1518f1d0386dd7fda7c48
 WORKDIR /home/node/app
 
 ENV NO_COLOR=1 \
-  PORT=1234
+  PORT=1234 
 
 COPY package.json package-lock.json  ./
 
@@ -17,9 +17,9 @@ FROM node:16.15.1-bullseye@sha256:294ed7085d137d4f16fd97c0e1518f1d0386dd7fda7c48
 WORKDIR /home/node/app 
 
 COPY . .
-
+# Copy from dependencies stage for reduced image size 
 COPY --from=dependencies /home/node/app /home/node/app/
-
+# Build the dependencies
 RUN npm run build
 
 
