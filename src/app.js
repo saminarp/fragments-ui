@@ -1,7 +1,7 @@
 // src/app.js
 
 import { Auth, getUser } from './auth';
-import { getFragmentOP, getUserFragments, postFragment } from './api';
+import { getFragmentOP, getUserFragments, postFragment, deleteFragment } from './api';
 
 // Get our UI elements
 // Auth Elements (login, logout, etc)
@@ -18,6 +18,10 @@ const fragmentType = document.querySelector('#create-fragment-type'); // SELECT 
 const convertForm = document.querySelector('#convert-form');
 const convertFragmentIdInput = document.querySelector('#convert-fragment-id-input'); // ENTER fragment id here
 const convertFragmentType = document.querySelector('#convert-fragment-type'); // SELECT fragment type here
+
+// DELETE: Delete a fragment of a given fragment ID
+const deleteForm = document.querySelector('#delete-form');
+const deleteFragmentIdInput = document.querySelector('#delete-fragment-id-input');
 
 async function init() {
   loginBtn.onclick = () => {
@@ -63,6 +67,15 @@ async function init() {
       false
     );
     console.log(result);
+  };
+
+  // DELETE a fragment
+  deleteForm.onsubmit = (e) => {
+    e.preventDefault();
+    deleteFragment(user, deleteFragmentIdInput.value);
+    readFragmentsIntoCard();
+    // clear
+    deleteFragmentIdInput.value = '';
   };
 
   function readFragmentsIntoCard() {

@@ -68,3 +68,22 @@ export async function postFragment(user, fragment, type) {
     console.error('Unable to call POST /v1/fragment', { err });
   }
 }
+
+export async function deleteFragment(user, id) {
+  console.log('Deleting user fragment...');
+
+  try {
+    const res = await fetch(`${apiUrl}/v1/fragments/${id}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: user.authorizationHeaders().Authorization,
+      },
+    });
+    if (!res.ok) {
+      throw new Error(`${res.status} ${res.statusText}`);
+    }
+    console.log('Deleted fragment ' + id);
+  } catch (err) {
+    console.error(`Unable to call DELETE /v1/fragment/${id}`, { err });
+  }
+}
