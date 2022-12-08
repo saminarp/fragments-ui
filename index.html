@@ -11,13 +11,8 @@
     />
     <link rel="stylesheet" href="https://unpkg.com/bamboo.css" />
     <script type="module" src="src/app.js"></script>
+    <link rel="stylesheet" href="public/style.css" />
   </head>
-  <style>
-    section {
-      margin: 10px 0;
-    }
-  </style>
-
   <body>
     <div id="app">
       <h1>Fragments UI</h1>
@@ -45,39 +40,6 @@
           <label for="create-fragment-type">Enter fragment data: </label>
           <input type="text" id="fragment-data-input" />
           <input type="submit" value="Post Fragment" style="margin-top: 10px" />
-        </form>
-      </section>
-      <hr />
-      <!-- ============== GET CONVERSION ================= -->
-
-      <section>
-        <h2>Convert Fragments</h2>
-
-        <form id="convert-form">
-          <label for="convert-fragment-type">Convert fragment to type: </label>
-          <select id="convert-fragment-type">
-            <option value=".md">text/markdown</option>
-            <option value=".html">text/html</option>
-            <option value=".txt">text/plain</option>
-            <option value=".json">application/json</option>
-          </select>
-          <br /><br />
-          <label for="create-fragment-type">Enter fragment ID that will be converted </label>
-          <input type="text" id="convert-fragment-id-input" />
-          <input type="submit" value="Convert Fragment" style="margin-top: 10px" />
-        </form>
-      </section>
-      <p id="dspError"></p>
-      <hr />
-
-      <section>
-        <h2>Delete Fragment</h2>
-        <form id="delete-form">
-          <label for="delete-fragment-id-input"
-            >Enter fragment ID that you would like to delete</label
-          >
-          <input type="text" id="delete-fragment-id-input" />
-          <input type="submit" value="Delete Fragment" style="margin-top: 10px" />
         </form>
       </section>
 
