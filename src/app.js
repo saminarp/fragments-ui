@@ -19,10 +19,6 @@ const convertForm = document.querySelector('#convert-form');
 const convertFragmentIdInput = document.querySelector('#convert-fragment-id-input'); // ENTER fragment id here
 const convertFragmentType = document.querySelector('#convert-fragment-type'); // SELECT fragment type here
 
-// DELETE: Delete a fragment of a given fragment ID
-const deleteForm = document.querySelector('#delete-form');
-const deleteFragmentIdInput = document.querySelector('#delete-fragment-id-input');
-
 async function init() {
   loginBtn.onclick = () => {
     // Sign-in via the Amazon Cognito Hosted UI (requires redirects), see:
@@ -56,27 +52,6 @@ async function init() {
     await postFragment(user, fragmentInput.value, fragmentType.value);
     readFragmentsIntoCard();
   };
-  // CONVERT a fragment
-  convertForm.onsubmit = (e) => {
-    e.preventDefault();
-
-    const result = getFragmentOP(
-      user,
-      convertFragmentIdInput.value,
-      convertFragmentType.value,
-      false
-    );
-    console.log(result);
-  };
-
-  // DELETE a fragment
-  deleteForm.onsubmit = (e) => {
-    e.preventDefault();
-    deleteFragment(user, deleteFragmentIdInput.value);
-    readFragmentsIntoCard();
-    // clear
-    deleteFragmentIdInput.value = '';
-  };
 
   function readFragmentsIntoCard() {
     const listOfFragments = getUserFragments(user, true);
@@ -87,9 +62,156 @@ async function init() {
         const fragmentDiv = document.createElement('div');
 
         fragmentDiv.style =
-          'border: 1px solid black; margin: 10px; padding: 10px; width: 500px; overflow: scroll; display: inline-block; vertical-align: top; text-align: left; background-color: #f2f2f2; border-radius: 5px; color: #000000;';
+          'border: 1px solid black; margin: 10px; padding: 10px; width: 100%; overflow: scroll; display: inline-block; vertical-align: top; text-align: left; background-color: #f2f2f2; border-radius: 5px; color: #000000;';
+        // FRAGMENT ID
+        const fragmentId = document.createElement('span');
+        fragmentId.innerText = `Fragment ID: `;
 
-        fragmentDiv.innerHTML = `Fragment ID:  ${fragment.id} <br> Fragment Type: ${fragment.type}  <br> Fragment Created: ${fragment.created} <br>  Fragment Updated: ${fragment.updated} <br> Fragment Size : ${fragment.size}`;
+        // create span element in p element to display fragment id
+        const fragmentIdBadge = document.createElement('span');
+        fragmentIdBadge.className = 'badge badge-secondary';
+        fragmentIdBadge.innerText = fragment.id;
+        fragmentIdBadge.style = 'padding: 4px; font-size: .9rem;';
+        fragmentId.appendChild(fragmentIdBadge);
+        fragmentDiv.appendChild(fragmentId);
+        // put br
+        fragmentDiv.appendChild(document.createElement('br'));
+        const fragmentType = document.createElement('span');
+        fragmentType.innerText = `Fragment Type: `;
+        const fragmentTypeBadge = document.createElement('span');
+        if (fragment.type == 'text/plain') {
+          fragmentTypeBadge.className = 'badge badge-secondary ';
+        } else if (fragment.type.includes('markdown')) {
+          fragmentTypeBadge.className = 'badge badge-primary';
+        } else if (fragment.type.includes('html')) {
+          fragmentTypeBadge.className = 'badge badge-danger';
+        } else if (fragment.type.includes('json')) {
+          fragmentTypeBadge.className = 'badge badge-warning';
+        } else if (fragment.type.includes('image')) {
+          fragmentTypeBadge.className = 'badge badge-success';
+        } else {
+          fragmentTypeBadge.className = 'badge badge-light';
+        }
+        fragmentTypeBadge.innerText = fragment.type;
+        fragmentTypeBadge.style = 'padding: 4px; font-size: .9rem;';
+        fragmentType.appendChild(fragmentTypeBadge);
+        fragmentDiv.appendChild(fragmentType);
+
+        // put br
+        fragmentDiv.appendChild(document.createElement('br'));
+        // FRAGMENT SIZE
+        const fragmentSize = document.createElement('span');
+        fragmentSize.innerText = `Fragment Size: `;
+        const fragmentSizeBadge = document.createElement('span');
+        fragmentSizeBadge.className = 'badge badge-secondary';
+        fragmentSizeBadge.innerText = fragment.size;
+        fragmentSize.appendChild(fragmentSizeBadge);
+        fragmentDiv.appendChild(fragmentSize);
+        // put br
+        fragmentDiv.appendChild(document.createElement('br'));
+
+        // created date
+        // turn date into readable format
+        const createdDate = new Date(fragment.created);
+        const createdDateFormatted = createdDate.toLocaleString();
+        const createdDateSpan = document.createElement('span');
+        createdDateSpan.innerText = `Created: ${createdDateFormatted} `;
+        fragmentDiv.appendChild(createdDateSpan);
+        // put br
+        fragmentDiv.appendChild(document.createElement('br'));
+
+        // last modified date
+        // turn date into readable format
+        const lastModifiedDate = new Date(fragment.updated);
+        const lastModifiedDateFormatted = lastModifiedDate.toLocaleString();
+        const lastModifiedDateSpan = document.createElement('span');
+        lastModifiedDateSpan.innerText = `Last Modified: ${lastModifiedDateFormatted} `;
+        fragmentDiv.appendChild(lastModifiedDateSpan);
+        // put br
+        fragmentDiv.appendChild(document.createElement('br'));
+
+        // add delete button
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'btn btn-danger';
+        deleteButton.innerText = 'Delete';
+        deleteButton.style = 'float: right; margin: 7px; padding: 7px; font-size: .9rem;';
+        deleteButton.onclick = async () => {
+          await deleteFragment(user, fragment.id);
+          readFragmentsIntoCard();
+        };
+        fragmentDiv.appendChild(deleteButton);
+
+        // add convert button
+        const convertButton = document.createElement('button');
+        convertButton.className = 'btn btn-primary';
+        convertButton.innerText = 'Convert';
+        convertButton.style = 'float: right; margin: 7px; padding: 7px; font-size: .9rem;';
+        convertButton.onclick = async () => {
+          // provide dropdown menu to select type to convert to
+          // types are text/plain, text/markdown, text/html, application/json,
+          const convertFragmentType = document.createElement('select');
+          convertFragmentType.className = 'form-control';
+          convertFragmentType.style = 'width: 100%; margin: 7px; padding: 7px; font-size: .9rem;';
+          convertFragmentType.id = 'convertFragmentType';
+          const convertFragmentTypeOption1 = document.createElement('option');
+          convertFragmentTypeOption1.value = '.txt';
+          convertFragmentTypeOption1.innerText = 'text/plain';
+
+          const convertFragmentTypeOption2 = document.createElement('option');
+          convertFragmentTypeOption2.value = '.md';
+          convertFragmentTypeOption2.innerText = 'text/markdown';
+
+          const convertFragmentTypeOption3 = document.createElement('option');
+          convertFragmentTypeOption3.value = '.html';
+          convertFragmentTypeOption3.innerText = 'text/html';
+
+          const convertFragmentTypeOption4 = document.createElement('option');
+          convertFragmentTypeOption4.value = '.json';
+          convertFragmentTypeOption4.innerText = 'application/json';
+
+          convertFragmentType.appendChild(convertFragmentTypeOption1);
+          convertFragmentType.appendChild(convertFragmentTypeOption2);
+          convertFragmentType.appendChild(convertFragmentTypeOption3);
+          convertFragmentType.appendChild(convertFragmentTypeOption4);
+
+          fragmentDiv.appendChild(convertFragmentType);
+
+          // add convert button
+          const convertButton = document.createElement('button');
+          convertButton.className = 'btn btn-primary';
+          convertButton.innerText = 'Convert';
+          convertButton.style = 'float: right; margin: 7px; padding: 7px; font-size: .9rem;';
+          convertButton.onclick = async () => {
+            let convertedData = await getFragmentOP(user, fragment.id, convertFragmentType.value);
+            // display converted data in a popup
+            // if converteddata is undefined, then set error message to convertedData
+            if (convertedData === undefined) {
+              convertedData = 'Error: Could not convert fragment - Unsupported conversion type';
+            }
+
+            const convertedDataPopup = document.createElement('div');
+            convertedDataPopup.className = 'card';
+            convertedDataPopup.style = 'width: 100%; margin: 7px; padding: 7px; font-size: .9rem;';
+            convertedDataPopup.innerText = convertedData;
+            fragmentDiv.appendChild(convertedDataPopup);
+
+            // add close button
+            const closeButton = document.createElement('button');
+            closeButton.className = 'btn btn-danger';
+            closeButton.innerText = 'Close';
+            closeButton.style = 'float: right; margin: 7px; padding: 7px; font-size: .9rem;';
+            closeButton.onclick = async () => {
+              convertedDataPopup.remove();
+              closeButton.remove();
+            };
+
+            fragmentDiv.appendChild(closeButton);
+          };
+          fragmentDiv.appendChild(convertButton);
+
+          // show
+        };
+        fragmentDiv.appendChild(convertButton);
 
         fragmentCards.appendChild(fragmentDiv);
       });
