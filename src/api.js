@@ -23,28 +23,59 @@ export async function getUserFragments(user, expand) {
   }
 }
 
-export async function getFragmentOP(user, id, ext, info) {
-  console.log('Requesting a single fragment...');
-
-  let data;
+export async function getFragmentById(user, id, ext = '') {
   try {
-    let url = `${apiUrl}/v1/fragments/${id}${ext}`;
-    if (info) url += '/info';
-    const res = await fetch(url, {
-      // Generate headers with the proper Authorization bearer token to pass
+    const res = await fetch(`${apiUrl}/v1/fragments/${id}${ext}`, {
       headers: user.authorizationHeaders(),
     });
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    const contentType = res.headers.get('Content-Type');
+    const type = contentType?.split(';')[0];
 
-    if (!res.ok) {
-      throw new Error(`${res.status} ${res.statusText}`);
+    switch (type) {
+      case 'text/plain':
+        return await res.text();
+      case 'text/html':
+        return await res.text();
+      case 'text/markdown':
+        return await res.text();
+      case 'application/json':
+        return { fragment: await res.json() };
+      case 'image/png':
+        const blobpng = await res.blob();
+        const url = URL.createObjectURL(blobpng);
+        return url;
+      case 'image/jpeg':
+        const blobjepeg = await res.blob();
+        const url2 = URL.createObjectURL(blobjepeg);
+        return url2;
+      case 'image/gif':
+        const blobgif = await res.blob();
+        const url3 = URL.createObjectURL(blobgif);
+        return url3;
+      case 'image/webp':
+        const blobwebp = await res.blob();
+        const url4 = URL.createObjectURL(blobwebp);
+        return url4;
+
+      default:
+        throw new Error(`Unknown content type: ${contentType}`);
     }
-
-    if (info) data = await res.json();
-    else data = await res.text();
-    console.log('Got user fragment data', { data });
-    return data;
   } catch (err) {
-    console.error('Unable to call GET /v1/fragments/:id ext is', { ext }, { err });
+    console.error('Unable to call GET /v1/fragments/:id', { err });
+    return null;
+  }
+}
+
+export async function getFragmentInfo(user, id) {
+  try {
+    const res = await fetch(`${apiUrl}/v1/fragments/${id}/info`, {
+      Authorization: user.authorizationHeaders().Authorization,
+    });
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    return res.json();
+  } catch (err) {
+    console.error(`Unable to call GET /v1/fragments/${id}`, { err });
   }
 }
 
