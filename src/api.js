@@ -83,6 +83,9 @@ export async function postFragment(user, fragment, type) {
   console.log('Posting user fragment data...');
 
   try {
+    if (type == 'application/json') {
+      fragment = JSON.parse(JSON.stringify(fragment).replace(/\\n/g, '').replace(/ /g, ''));
+    }
     const res = await fetch(`${apiUrl}/v1/fragments`, {
       method: 'POST',
       headers: {
@@ -116,5 +119,23 @@ export async function deleteFragment(user, id) {
     console.log('Deleted fragment ' + id);
   } catch (err) {
     console.error(`Unable to call DELETE /v1/fragment/${id}`, { err });
+  }
+}
+
+export async function updateFragment(user, id, fragment, type) {
+  try {
+    const res = await fetch(`${apiUrl}/v1/fragments/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': type,
+        Authorization: user.authorizationHeaders().Authorization,
+      },
+      body: fragment,
+    });
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    console.log('Updated fragment data', { fragments: await res.json() });
+  } catch (err) {
+    console.error('Unable to call PUT /v1/fragment', { err: err.message });
+    throw new Error('Unable to call PUT /v1/fragment');
   }
 }

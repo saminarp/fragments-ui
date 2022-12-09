@@ -1,3 +1,22 @@
 form {
   margin: 10px;
 }
+
+.badge {
+}
+
+.keyvalue {
+  font-weight: 400;
+  font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+  font-size: 1rem;
+  /* display as block but dont put space between */
+  display: inline-block;
+  margin: 0;
+  padding: 2px 10px;
+}
+
+.badge {
+  font-size: 1rem;
+  font-weight: 800;
+  font-family: 'Courier New', Courier, monospace;
+}

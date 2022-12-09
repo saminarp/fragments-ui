@@ -1,7 +1,13 @@
 // src/app.js
 
 import { Auth, getUser } from './auth';
-import { getFragmentById, getUserFragments, postFragment, deleteFragment } from './api';
+import {
+  getFragmentById,
+  getUserFragments,
+  postFragment,
+  deleteFragment,
+  updateFragment,
+} from './api';
 import { create, registerPlugin } from 'filepond';
 import 'filepond/dist/filepond.css';
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
@@ -121,12 +127,14 @@ async function init() {
       data.fragments.forEach((fragment) => {
         const fragmentDiv = document.createElement('div');
 
-        fragmentDiv.style =
-          'border: 1px solid black; margin: 10px; padding: 10px; width: 100%; overflow: scroll; display: inline-block; vertical-align: top; text-align: left; background-color: #f2f2f2; border-radius: 20px; color: #000000; font-size: 1rem; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); font-family: "Courier New", Courier, monospace; font-weight: 700; line-height: 1.5; letter-spacing: 0.00938em;';
+        fragmentDiv.style = `border: 1px solid black; margin: 10px; padding: 10px; width: 100%; overflow: scroll; display: inline-block; vertical-align: top; text-align: left; background-color: #FFD6EC; border-radius: 20px; color: #000000; font-size: 1rem; box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19) ; font-weight: 700; line-height: 1.5; letter-spacing: 0.00938em;
+        font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+          `;
         // FRAGMENT ID
         const fragmentId = document.createElement('span');
         fragmentId.innerText = `Fragment ID: `;
-
+        // add a class called keyvalue to the fragmentId
+        fragmentId.className = 'keyvalue';
         // create span element in p element to display fragment id
         const fragmentIdBadge = document.createElement('span');
         fragmentIdBadge.className = 'badge badge-secondary';
@@ -137,6 +145,7 @@ async function init() {
         // put br
         fragmentDiv.appendChild(document.createElement('br'));
         const fragmentType = document.createElement('span');
+        fragmentType.className = 'keyvalue';
         fragmentType.innerText = `Fragment Type: `;
         const fragmentTypeBadge = document.createElement('span');
         if (fragment.type == 'text/plain') {
@@ -162,6 +171,7 @@ async function init() {
         // FRAGMENT SIZE
         const fragmentSize = document.createElement('span');
         fragmentSize.innerText = `Fragment Size: `;
+        fragmentSize.className = 'keyvalue';
         const fragmentSizeBadge = document.createElement('span');
         fragmentSizeBadge.className = 'badge badge-secondary';
         fragmentSizeBadge.innerText = fragment.size;
@@ -170,23 +180,33 @@ async function init() {
         // put br
         fragmentDiv.appendChild(document.createElement('br'));
 
-        // created date
-        // turn date into readable format
-        const createdDate = new Date(fragment.created);
-        const createdDateFormatted = createdDate.toLocaleString();
+        const createdDateBadge = new Date(fragment.created);
+        const createdDateFormatted = createdDateBadge.toLocaleString();
         const createdDateSpan = document.createElement('span');
-        createdDateSpan.innerText = `Created: ${createdDateFormatted} `;
+        createdDateSpan.innerText = `Created: `;
+        createdDateSpan.className = 'keyvalue';
+        const createdDateBadgeSpan = document.createElement('span');
+        createdDateBadgeSpan.className = 'badge badge-dark';
+        createdDateBadgeSpan.innerText = createdDateFormatted;
+        createdDateBadgeSpan.style = 'padding: 4px; font-size: .9rem;';
+        createdDateSpan.appendChild(createdDateBadgeSpan);
+
         fragmentDiv.appendChild(createdDateSpan);
         // put br
         fragmentDiv.appendChild(document.createElement('br'));
 
-        // last modified date
-        // turn date into readable format
-        const lastModifiedDate = new Date(fragment.updated);
-        const lastModifiedDateFormatted = lastModifiedDate.toLocaleString();
+        const lastModifiedDateBadge = new Date(fragment.updated);
+        const lastModifiedDateFormatted = lastModifiedDateBadge.toLocaleString();
         const lastModifiedDateSpan = document.createElement('span');
-        lastModifiedDateSpan.innerText = `Last Modified: ${lastModifiedDateFormatted} `;
+        lastModifiedDateSpan.innerText = `Last Modified :`;
+        lastModifiedDateSpan.className = 'keyvalue';
+        const lastModifiedDateBadgeSpan = document.createElement('span');
+        lastModifiedDateBadgeSpan.className = 'badge badge-dark';
+        lastModifiedDateBadgeSpan.innerText = lastModifiedDateFormatted;
+        lastModifiedDateBadgeSpan.style = 'padding: 4px; font-size: .9rem;';
+        lastModifiedDateSpan.appendChild(lastModifiedDateBadgeSpan);
         fragmentDiv.appendChild(lastModifiedDateSpan);
+
         // put br
         fragmentDiv.appendChild(document.createElement('br'));
 
@@ -200,6 +220,132 @@ async function init() {
           readFragmentsIntoCard();
         };
         fragmentDiv.appendChild(deleteButton);
+
+        // put a update button
+        const updateButton = document.createElement('button');
+        updateButton.className = 'btn btn-info';
+        updateButton.innerText = 'Update Fragment';
+        updateButton.style = 'float: right; margin: 7px; padding: 7px; font-size: .9rem;';
+        updateButton.onclick = async () => {
+          // if fragment is text/* or application/json then show textarea
+          if (fragment.type.includes('text/') || fragment.type.includes('json')) {
+            const updateFragmentTextArea = document.createElement('textarea');
+            updateFragmentTextArea.className = 'form-control';
+            updateFragmentTextArea.style =
+              'margin: 10px; padding: 10px; width: 90%; display: none;';
+            const data = await getFragmentById(user, fragment.id);
+
+            if (fragment.type.includes('json')) {
+              //updateFragmentTextArea.value = JSON.stringify(JSON.parse(data), null, 2);
+              updateFragmentTextArea.value = JSON.stringify(data, null, 2);
+            } else {
+              updateFragmentTextArea.value = data;
+            }
+
+            fragmentDiv.appendChild(updateFragmentTextArea);
+            updateFragmentTextArea.style = 'margin: 10px; padding: 10px; width: 90%;';
+            // create a save button
+            const saveButton = document.createElement('button');
+            saveButton.className = 'btn btn-success';
+            saveButton.innerText = 'Save Fragment';
+            saveButton.style = 'float: right; margin: 7px; padding: 7px; font-size: .9rem;';
+            saveButton.onclick = async () => {
+              await updateFragment(user, fragment.id, updateFragmentTextArea.value, fragment.type);
+              readFragmentsIntoCard();
+            };
+            // close button
+            const closeButton = document.createElement('button');
+            closeButton.className = 'btn btn-danger';
+            closeButton.innerText = 'Close';
+            closeButton.style = 'float: right; margin: 7px; padding: 7px; font-size: .9rem;';
+            closeButton.onclick = () => {
+              updateFragmentTextArea.style = 'display: none;';
+              saveButton.style = 'display: none;';
+              closeButton.style = 'display: none;';
+            };
+            fragmentDiv.appendChild(closeButton);
+
+            fragmentDiv.appendChild(saveButton);
+          }
+
+          // if fragment is image/* then show input type file
+          else if (fragment.type.includes('image/')) {
+            const updateFragmentFileInput = document.createElement('input');
+            updateFragmentFileInput.type = 'file';
+            updateFragmentFileInput.className = 'form-control';
+            updateFragmentFileInput.style = 'margin: 10px; padding: 10px; width: 90%;';
+            fragmentDiv.appendChild(updateFragmentFileInput);
+            updateButton.innerText = 'Save Fragment';
+            // create another Filepond instance
+            const pond = FilePond.create(updateFragmentFileInput, {
+              allowMultiple: false,
+              acceptedFileTypes: ['image/*'],
+            });
+            let fileDropBox = '';
+            pond.on('addfile', (error, file) => {
+              if (error) {
+                console.log(`Error posting the file: ${error}`);
+                return;
+              }
+              console.table(
+                `File added with content type ${file.fileType}, and size ${file.fileSize}`
+              );
+
+              fileDropBox = file;
+            });
+
+            // create a save button
+            const saveButton = document.createElement('button');
+            saveButton.className = 'btn btn-success';
+            saveButton.innerText = 'Save Fragment';
+            saveButton.style = 'float: right; margin: 7px; padding: 7px; font-size: .9rem;';
+            saveButton.onclick = async () => {
+              console.log(`File name: ${fileDropBox}`);
+              const fileReader = new FileReader();
+              fileReader.readAsArrayBuffer(fileDropBox.file);
+
+              fileReader.onload = async () => {
+                const fragmentType = fileDropBox.fileType;
+                // if the file is an image, the data is a base64 string
+                const fragmentData = fileReader.result;
+
+                console.log(`Fragment type: ${fragmentType}`);
+                console.log(`Fragment data: ${fileReader.result}`);
+
+                try {
+                  await updateFragment(user, fragment.id, fragmentData, fragmentType);
+                } catch (error) {
+                  console.log(`Error posting the file: ${error}`);
+                  // display error message to user on the page
+                  const errorMessage = document.createElement('div');
+                  errorMessage.className = 'alert alert-danger';
+                  errorMessage.innerText = `Error posting the file: 400 Bad Request - Ensure new content type is same as existing content type`;
+                  fragmentDiv.appendChild(errorMessage);
+                  return;
+                }
+
+                readFragmentsIntoCard();
+                console.log(`Posted fragment of type ${fragmentType}`);
+              };
+
+              fileReader.onerror = (error) => {
+                console.log(`Error reading the file: ${error}`);
+              };
+            };
+
+            // close button
+            const closeButton = document.createElement('button');
+            closeButton.className = 'btn btn-danger';
+            closeButton.innerText = 'Close';
+            closeButton.style = 'float: right; margin: 7px; padding: 7px; font-size: .9rem;';
+            closeButton.onclick = () => {
+              readFragmentsIntoCard();
+            };
+            fragmentDiv.appendChild(closeButton);
+            fragmentDiv.appendChild(saveButton);
+          }
+        };
+        fragmentDiv.appendChild(updateButton);
 
         // add view button to view fragment on each click hide and show fragment content
         const viewButton = document.createElement('button');
@@ -218,13 +364,25 @@ async function init() {
             fragmentDataDiv.style = 'display: inline-block; width: 100%;';
             const fragmentData = document.createElement('span');
             fragmentData.innerText = `Current fragment data: `;
-            const fragmentDataBadge = document.createElement('span');
-            fragmentDataBadge.className = 'badge badge-secondary';
-            fragmentDataBadge.innerText = await getFragmentById(user, fragment.id, '');
-            fragmentDataBadge.style = 'padding: 4px; font-size: .9rem;';
-            fragmentData.appendChild(fragmentDataBadge);
-            fragmentDataDiv.appendChild(fragmentData);
-            fragmentContentDiv.appendChild(fragmentDataDiv);
+            if (!fragment.type.includes('json')) {
+              const fragmentDataBadge = document.createElement('span');
+              fragmentDataBadge.className = 'badge badge-secondary';
+              fragmentDataBadge.innerText = await getFragmentById(user, fragment.id, '');
+              fragmentDataBadge.style = 'padding: 4px; font-size: .9rem;';
+              fragmentData.appendChild(fragmentDataBadge);
+              fragmentDataDiv.appendChild(fragmentData);
+              fragmentContentDiv.appendChild(fragmentDataDiv);
+            } else if (fragment.type.includes('json')) {
+              const fragmentDataTextArea = document.createElement('textarea');
+              fragmentDataTextArea.className = 'form-control';
+              fragmentDataTextArea.style = 'width: 100%; display: inline-block;';
+              const jsonData = await getFragmentById(user, fragment.id, '');
+              fragmentDataTextArea.value = JSON.stringify(jsonData, null, 2);
+              fragmentDataDiv.appendChild(fragmentDataTextArea);
+              fragmentContentDiv.appendChild(fragmentDataDiv);
+              // no edit allowed in textarea
+              fragmentDataTextArea.disabled = true;
+            }
 
             // put br
             fragmentContentDiv.appendChild(document.createElement('br'));
@@ -264,6 +422,7 @@ async function init() {
             fragmentConvertButton.innerText = 'Convert';
             fragmentConvertButton.style =
               'float: right; margin: 7px; padding: 7px; font-size: .9rem;';
+
             fragmentConvertButton.onclick = async () => {
               const fragmentData = await getFragmentById(
                 user,
@@ -297,6 +456,7 @@ async function init() {
               const fragmentConvertedContentBadge = document.createElement('span');
               fragmentConvertedContentBadge.className = 'badge badge-secondary';
               fragmentConvertedContentBadge.innerText = fragmentData;
+
               fragmentConvertedContentBadge.style = 'padding: 4px; font-size: .9rem;';
               fragmentConvertedContent.appendChild(fragmentConvertedContentBadge);
               fragmentConvertedContentDiv.appendChild(fragmentConvertedContent);
